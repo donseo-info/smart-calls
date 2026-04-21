@@ -1,0 +1,13 @@
+# System
+.DS_Store
+.claude/
+
+# Database
+db/*.db
+
+# Logs
+logs/*.txt
+logs/*.log
+
+# Sensitive config (prod override)
+config.local.php

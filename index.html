@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест виджета обратного звонка</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { overflow-x: hidden; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f4f8;
+            color: #333;
+        }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #fff;
+            padding: 80px 20px;
+            text-align: center;
+        }
+        .hero h1 { font-size: clamp(28px, 7vw, 42px); font-weight: 800; margin-bottom: 16px; line-height: 1.2; }
+        .hero p  { font-size: 18px; opacity: .75; max-width: 520px; margin: 0 auto 32px; }
+        .hero-btn {
+            display: inline-block;
+            padding: 14px 36px;
+            background: #25c16f;
+            color: #fff;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: filter .2s;
+        }
+        .hero-btn:hover { filter: brightness(1.1); }
+
+        /* Секции */
+        .section { padding: 64px 20px; max-width: 900px; margin: 0 auto; }
+        .section h2 { font-size: 28px; font-weight: 700; margin-bottom: 20px; color: #1a1a2e; }
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 28px 22px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.07);
+        }
+        .card-icon { font-size: 36px; margin-bottom: 12px; }
+        .card h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: #1a1a2e; }
+        .card p  { font-size: 14px; color: #777; line-height: 1.5; }
+
+        .program-section {
+            background: #fff;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.07);
+        }
+        .program-section h2 { margin-bottom: 16px; }
+        .program-section p { color: #666; line-height: 1.6; }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: #aaa;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+<section class="hero">
+    <h1>Онлайн-курс по&nbsp;программированию</h1>
+    <p>Научитесь создавать современные веб-приложения с нуля за&nbsp;6&nbsp;месяцев</p>
+    <a href="#" class="hero-btn">Записаться на курс</a>
+</section>
+
+<div class="section">
+    <h2>Чему вы научитесь</h2>
+    <div class="cards">
+        <div class="card">
+            <div class="card-icon">⚡</div>
+            <h3>JavaScript</h3>
+            <p>Современный ES2024+, асинхронное программирование, паттерны проектирования</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">🎨</div>
+            <h3>Frontend</h3>
+            <p>React, Next.js, TypeScript, адаптивная вёрстка и анимации</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">🔧</div>
+            <h3>Backend</h3>
+            <p>Node.js, Express, базы данных PostgreSQL и MongoDB</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">🚀</div>
+            <h3>DevOps</h3>
+            <p>Docker, CI/CD, деплой на облачные сервисы</p>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <div class="program-section">
+        <h2>Программа курса</h2>
+        <p>Полная программа включает 48 занятий, 12 практических проектов и персонального ментора. Вы получите все необходимые знания для старта карьеры full-stack разработчика.</p>
+    </div>
+</div>
+
+<footer>
+    © 2026 SmartCall · Тестовая страница виджета обратного звонка
+</footer>
+
+<!-- Виджет обратного звонка -->
+<script>
+(function(w,d,s,u,g,c){
+  w._SCW={gate:g,counter:c};
+  var el=d.createElement(s);el.async=1;el.src=u;
+  d.head.appendChild(el);
+})(window,document,'script',
+  'http://smart-call.loc/widget.php?key=0c57740d81df81dd&_=1',
+  'http://smart-call.loc/api/submit.php',
+  '');
+</script>
+
+</body>
+</html>
