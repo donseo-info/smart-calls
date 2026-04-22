@@ -14,7 +14,9 @@ require_once __DIR__ . '/config.php';
 
 header('Content-Type: application/javascript; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
-header('Cache-Control: no-store, no-cache, must-revalidate');
+header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
 
 $key = trim($_GET['key'] ?? '');
 
@@ -59,6 +61,15 @@ $config = [
     'ymCounterId'       => (int)$site->ym_counter_id,
     'ymGoal'            => $site->ym_goal ?: 'callback_widget',
 ];
+
+// ETag по updated_at — принудительная ревалидация при изменении настроек
+$etag = '"' . md5($site->site_key . $site->updated_at) . '"';
+header('ETag: ' . $etag);
+if (isset($_SERVER['HTTP_IF_NONE_MATCH']) && $_SERVER['HTTP_IF_NONE_MATCH'] === $etag) {
+    http_response_code(304);
+    R::close();
+    exit;
+}
 
 R::close();
 
