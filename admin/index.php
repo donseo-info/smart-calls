@@ -689,7 +689,7 @@ function buildUrl(array $extra = []): string {
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
           <div style="font-weight:600;font-size:13px;color:#1e3a8a;">Вариант 2 — скрытый домен <span class="badge ms-1" style="background:#fffbeb;color:#b45309;font-size:10px;font-weight:600;text-transform:none;">обфускация</span></div>
-          <div style="font-size:11px;color:#94a3b8;">URL зашифрован base64 — домен сервера не виден в исходнике страницы</div>
+          <div style="font-size:11px;color:#94a3b8;">Домен разбит на части — не читается как строка в исходнике страницы</div>
         </div>
         <button class="btn btn-sm btn-outline-warning copy-btn" data-target="code-obfuscated">
           <i class="bi bi-clipboard"></i> Копировать
