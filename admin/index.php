@@ -553,8 +553,11 @@ function buildUrl(array $extra = []): string {
 <?php elseif ($tab === 'install'): ?>
 
 <?php
-  $iWidgetUrl = BASE_URL . '/widget.php?key=' . ($installSite['site_key'] ?? 'SITE_KEY');
-  $iGateUrl   = BASE_URL . '/api/submit.php';
+  $iProtoDetect = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+  $iBaseDetect  = $iProtoDetect . '://' . $_SERVER['HTTP_HOST']
+    . rtrim(dirname(dirname($_SERVER['SCRIPT_NAME'])), '/\\');
+  $iWidgetUrl = $iBaseDetect . '/widget.php?key=' . ($installSite['site_key'] ?? 'SITE_KEY');
+  $iGateUrl   = $iBaseDetect . '/api/submit.php';
   $iCounter   = $installSite['ym_counter_id'] ?? '';
 
   $codeSimple = '<script src="' . $iWidgetUrl . '"' . "\n"
