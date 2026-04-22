@@ -589,19 +589,21 @@ function buildUrl(array $extra = []): string {
   $iP1    = substr($iBasePath, 0, $pp1);
   $iP2    = substr($iBasePath, $pp1, $pp2 - $pp1);
   $iP3    = substr($iBasePath, $pp2);
-  $iWFile = '/' . basename(parse_url($iWidgetUrl, PHP_URL_PATH)) . '?key=' . ($installSite['site_key'] ?? 'SITE_KEY');
-  $iGFile = '/' . ltrim(substr(parse_url($iGateUrl, PHP_URL_PATH), strlen($iBasePath)), '/');
+  $iWName = '/' . pathinfo(parse_url($iWidgetUrl, PHP_URL_PATH), PATHINFO_FILENAME);
+  $iGName = '/api/' . pathinfo(parse_url($iGateUrl, PHP_URL_PATH), PATHINFO_FILENAME);
+  $iKey   = '?key=' . ($installSite['site_key'] ?? 'SITE_KEY');
 
   $codeObfuscated = '<script>' . "\n"
     . 'var _h=\'' . $iH1 . '\'+\'' . $iH2 . '\'+\'' . $iH3 . '\';' . "\n"
     . 'var _p=\'' . $iP1 . '\'+\'' . $iP2 . '\'+\'' . $iP3 . '\';' . "\n"
+    . 'var _e=\'.p\'+\'hp\';' . "\n"
     . '(function(w,d,s,u,g,c){' . "\n"
     . '  w._SCW={gate:g,counter:c};' . "\n"
     . '  var el=d.createElement(s);el.async=1;el.src=u;' . "\n"
     . '  d.head.appendChild(el);' . "\n"
     . '})(window,document,\'script\',' . "\n"
-    . '  \'' . $iProto . '\'+_h+_p+\'' . $iWFile . '\',' . "\n"
-    . '  \'' . $iProto . '\'+_h+_p+\'' . $iGFile . '\',' . "\n"
+    . '  \'' . $iProto . '\'+_h+_p+\'' . $iWName . '\'+_e+\'' . $iKey . '\',' . "\n"
+    . '  \'' . $iProto . '\'+_h+_p+\'' . $iGName . '\'+_e,' . "\n"
     . '  \'' . ($iCounter ?: 'XXXXXXXX') . '\');' . "\n"
     . '</script>';
 ?>
