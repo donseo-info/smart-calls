@@ -582,18 +582,26 @@ function buildUrl(array $extra = []): string {
   $iH2    = substr($iHost, $p1, $p2 - $p1);
   $iH3    = substr($iHost, $p2);
   $iProto = parse_url($iWidgetUrl, PHP_URL_SCHEME) . '://';
-  $iWPath = parse_url($iWidgetUrl, PHP_URL_PATH) . '?key=' . ($installSite['site_key'] ?? 'SITE_KEY');
-  $iGPath = parse_url($iGateUrl, PHP_URL_PATH);
+  $iBasePath = dirname(parse_url($iWidgetUrl, PHP_URL_PATH));
+  $iPLen  = strlen($iBasePath);
+  $pp1    = (int)round($iPLen / 3);
+  $pp2    = (int)round($iPLen * 2 / 3);
+  $iP1    = substr($iBasePath, 0, $pp1);
+  $iP2    = substr($iBasePath, $pp1, $pp2 - $pp1);
+  $iP3    = substr($iBasePath, $pp2);
+  $iWFile = '/' . basename(parse_url($iWidgetUrl, PHP_URL_PATH)) . '?key=' . ($installSite['site_key'] ?? 'SITE_KEY');
+  $iGFile = '/' . ltrim(substr(parse_url($iGateUrl, PHP_URL_PATH), strlen($iBasePath)), '/');
 
   $codeObfuscated = '<script>' . "\n"
     . 'var _h=\'' . $iH1 . '\'+\'' . $iH2 . '\'+\'' . $iH3 . '\';' . "\n"
+    . 'var _p=\'' . $iP1 . '\'+\'' . $iP2 . '\'+\'' . $iP3 . '\';' . "\n"
     . '(function(w,d,s,u,g,c){' . "\n"
     . '  w._SCW={gate:g,counter:c};' . "\n"
     . '  var el=d.createElement(s);el.async=1;el.src=u;' . "\n"
     . '  d.head.appendChild(el);' . "\n"
     . '})(window,document,\'script\',' . "\n"
-    . '  \'' . $iProto . '\'+_h+\'' . $iWPath . '\',' . "\n"
-    . '  \'' . $iProto . '\'+_h+\'' . $iGPath . '\',' . "\n"
+    . '  \'' . $iProto . '\'+_h+_p+\'' . $iWFile . '\',' . "\n"
+    . '  \'' . $iProto . '\'+_h+_p+\'' . $iGFile . '\',' . "\n"
     . '  \'' . ($iCounter ?: 'XXXXXXXX') . '\');' . "\n"
     . '</script>';
 ?>
