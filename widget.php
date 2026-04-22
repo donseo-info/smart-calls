@@ -39,7 +39,10 @@ if (!$site) {
 // Формируем конфиг из настроек сайта
 $config = [
     'siteKey'           => $site->site_key,
-    'submitUrl'         => BASE_URL . '/api/submit.php',
+    'submitUrl'         => ((!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off')?'https':'http')
+                          . '://' . $_SERVER['HTTP_HOST']
+                          . rtrim(dirname(dirname($_SERVER['SCRIPT_NAME'])),'/\\')
+                          . '/api/submit.php',
     'buttonColor'       => $site->button_color,
     'pulseColor'        => $site->pulse_color,
     'position'          => $site->position,
