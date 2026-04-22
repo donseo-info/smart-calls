@@ -1024,9 +1024,10 @@ function openEditModal(site) {
   var c = site.button_color || '#25c16f';
   document.getElementById('f_button_color').value = c;
   document.getElementById('f_button_color_hex').value = c;
-  document.getElementById('f_position').value     = site.position      || 'right';
-  document.getElementById('f_bottom_offset').value = site.bottom_offset || '30px';
-  document.getElementById('f_side_offset').value   = site.side_offset   || '30px';
+  sv('f_position','position');
+  sv('f_bottom_offset','bottom_offset');
+  sv('f_side_offset','side_offset');
+  if (!document.getElementById('f_position').value) document.getElementById('f_position').value = 'right';
   var sc = Math.round((parseFloat(site.auto_open_scroll)||0.75)*100);
   document.getElementById('f_auto_open_scroll').value = sc;
   document.getElementById('f_auto_open_time').value = site.auto_open_time || 30;
