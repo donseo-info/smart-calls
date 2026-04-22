@@ -21,7 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $site->button_color      = $_POST['button_color']      ?? '#25c16f';
         $site->pulse_color       = 'rgba(37,193,111,0.4)';
         $site->position          = $_POST['position']          ?? 'right';
-        $site->bottom_offset     = '30px'; $site->side_offset = '30px';
+        $site->bottom_offset     = trim($_POST['bottom_offset'] ?? '30px') ?: '30px';
+        $site->side_offset       = trim($_POST['side_offset']   ?? '30px') ?: '30px';
         $site->title             = $_POST['title']             ?? 'Перезвоним за 30 секунд';
         $site->subtitle          = $_POST['subtitle']          ?? 'Оставьте номер — мы сами позвоним';
         $site->success_text      = $_POST['success_text']      ?? 'Спасибо! Перезвоним в течение 30 секунд.';
@@ -52,6 +53,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $site->domain            = trim($_POST['domain']          ?? $site->domain);
         $site->button_color      = $_POST['button_color']         ?? $site->button_color;
         $site->position          = $_POST['position']             ?? $site->position;
+        $site->bottom_offset     = trim($_POST['bottom_offset']   ?? $site->bottom_offset) ?: $site->bottom_offset;
+        $site->side_offset       = trim($_POST['side_offset']     ?? $site->side_offset)   ?: $site->side_offset;
         $site->title             = $_POST['title']                ?? $site->title;
         $site->subtitle          = $_POST['subtitle']             ?? $site->subtitle;
         $site->success_text      = $_POST['success_text']         ?? $site->success_text;
@@ -797,6 +800,14 @@ function buildUrl(array $extra = []): string {
                 <label class="form-label">Задержка появления (сек)</label>
                 <input type="number" class="form-control form-control-sm" name="show_delay" id="f_show_delay" value="5" min="0" max="60">
               </div>
+              <div class="col-4">
+                <label class="form-label">Отступ снизу</label>
+                <input class="form-control form-control-sm" name="bottom_offset" id="f_bottom_offset" placeholder="30px">
+              </div>
+              <div class="col-4">
+                <label class="form-label">Отступ от края</label>
+                <input class="form-control form-control-sm" name="side_offset" id="f_side_offset" placeholder="30px">
+              </div>
             </div>
           </div>
 
@@ -1011,7 +1022,9 @@ function openEditModal(site) {
   var c = site.button_color || '#25c16f';
   document.getElementById('f_button_color').value = c;
   document.getElementById('f_button_color_hex').value = c;
-  document.getElementById('f_position').value = site.position || 'right';
+  document.getElementById('f_position').value     = site.position      || 'right';
+  document.getElementById('f_bottom_offset').value = site.bottom_offset || '30px';
+  document.getElementById('f_side_offset').value   = site.side_offset   || '30px';
   var sc = Math.round((parseFloat(site.auto_open_scroll)||0.75)*100);
   document.getElementById('f_auto_open_scroll').value = sc;
   document.getElementById('f_auto_open_time').value = site.auto_open_time || 30;
