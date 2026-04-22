@@ -187,6 +187,11 @@ $recentLeads  = R::getAll("SELECT l.*, s.name as site_name FROM leads l LEFT JOI
 
 $sites = R::getAll('SELECT s.*, (SELECT COUNT(*) FROM leads l WHERE l.site_id=s.id) as leads_count FROM sites s ORDER BY s.created_at DESC');
 
+$installSiteId = (int)($_GET['install_site'] ?? ($sites[0]['id'] ?? 0));
+$installSite   = null;
+foreach ($sites as $s) { if ($s['id'] == $installSiteId) { $installSite = $s; break; } }
+if (!$installSite && $sites) $installSite = $sites[0];
+
 $leadsPage        = max(1, (int)($_GET['lp'] ?? 1));
 $leadsLimit       = 25;
 $leadsOffset      = ($leadsPage - 1) * $leadsLimit;
@@ -299,6 +304,11 @@ function buildUrl(array $extra = []): string {
   /* ── Embed-блок ── */
   .embed-box { background:#f8fbff; border:1px solid #bfdbfe; border-radius:8px; padding:12px 14px; font-family:monospace; font-size:12px; color:#1d4ed8; word-break:break-all; }
 
+  /* ── Install ── */
+  .install-wrap { background:#fff; border:1px solid #dbeafe; border-radius:12px; box-shadow:0 4px 12px rgba(15,23,42,.06); padding:20px 22px; height:100%; }
+  .install-code { background:#0f172a; color:#7dd3fc; border-radius:8px; padding:14px 16px; font-family:monospace; font-size:12px; line-height:1.7; white-space:pre-wrap; word-break:break-all; margin:0; border:none; }
+  .copy-btn.copied { background:#dcfce7!important; color:#15803d!important; border-color:#bbf7d0!important; }
+
   /* ── Toast ── */
   .toast-ct { position:fixed; bottom:24px; right:24px; z-index:9999; min-width:220px; }
 </style>
@@ -342,6 +352,11 @@ function buildUrl(array $extra = []): string {
     <li class="nav-item">
       <a class="nav-link <?= activeTab('integrations',$tab) ?>" href="?tab=integrations">
         <i class="bi bi-plug"></i> Интеграции
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <?= activeTab('install',$tab) ?>" href="?tab=install">
+        <i class="bi bi-code-slash"></i> Установка
       </a>
     </li>
   </ul>
@@ -534,6 +549,156 @@ function buildUrl(array $extra = []): string {
     </tbody>
   </table>
 </div>
+
+<?php elseif ($tab === 'install'): ?>
+
+<?php
+  $iWidgetUrl = BASE_URL . '/widget.php?key=' . ($installSite['site_key'] ?? 'SITE_KEY');
+  $iGateUrl   = BASE_URL . '/api/submit.php';
+  $iCounter   = $installSite['ym_counter_id'] ?? '';
+
+  $codeSimple = '<script src="' . $iWidgetUrl . '"' . "\n"
+    . '        data-gate="' . $iGateUrl . '"' . "\n"
+    . '        data-counter="' . ($iCounter ?: 'XXXXXXXX') . '"></script>';
+
+  $codeAsync = '<script>' . "\n"
+    . '(function(w,d,s,u,g,c){' . "\n"
+    . '  w._SCW={gate:g,counter:c};' . "\n"
+    . '  var el=d.createElement(s);el.async=1;el.src=u;' . "\n"
+    . '  d.head.appendChild(el);' . "\n"
+    . '})(window,document,\'script\',' . "\n"
+    . '  \'' . $iWidgetUrl . '\',' . "\n"
+    . '  \'' . $iGateUrl . '\',' . "\n"
+    . '  \'' . ($iCounter ?: 'XXXXXXXX') . '\');' . "\n"
+    . '</script>';
+
+  $codeGtm = $codeAsync;
+?>
+
+<div class="row g-3">
+
+  <!-- Информация -->
+  <div class="col-12">
+    <div class="install-wrap" style="border-left:4px solid #3b82f6">
+      <div class="d-flex align-items-start gap-3">
+        <div style="font-size:24px;color:#3b82f6;line-height:1"><i class="bi bi-info-circle-fill"></i></div>
+        <div class="flex-grow-1">
+          <div style="font-weight:600;margin-bottom:4px">Как подключить виджет на сайт</div>
+          <div style="color:#64748b;font-size:12px;line-height:1.6">
+            Вставьте один из вариантов кода перед закрывающим тегом <code>&lt;/body&gt;</code>.
+            <?php if (!$iCounter): ?>Замените <code>XXXXXXXX</code> на номер счётчика Яндекс.Метрики или оставьте пустым.<?php endif ?>
+            Виджет автоматически загружает настройки для выбранного сайта.
+          </div>
+        </div>
+        <?php if ($sites): ?>
+        <div class="flex-shrink-0">
+          <select class="form-select form-select-sm" style="width:200px;border-color:#bfdbfe;font-size:12px;"
+            onchange="location='?tab=install&install_site='+this.value">
+            <?php foreach ($sites as $s): ?>
+              <option value="<?= $s['id'] ?>" <?= $s['id']==$installSite['id'] ? 'selected' : '' ?>><?= esc($s['name']) ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <?php endif; ?>
+      </div>
+    </div>
+  </div>
+
+  <?php if (!$installSite): ?>
+  <div class="col-12">
+    <div class="install-wrap">
+      <div class="empty-state"><i class="bi bi-globe"></i>Сначала <a href="?tab=sites">добавьте сайт</a></div>
+    </div>
+  </div>
+  <?php else: ?>
+
+  <!-- Вариант 1: простой -->
+  <div class="col-12 col-lg-6">
+    <div class="install-wrap">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <div style="font-weight:600;font-size:13px;color:#1e3a8a;">Вариант 1 — простой</div>
+          <div style="font-size:11px;color:#94a3b8;">Обычный тег &lt;script&gt;</div>
+        </div>
+        <button class="btn btn-sm btn-outline-primary copy-btn" data-target="code-simple">
+          <i class="bi bi-clipboard"></i> Копировать
+        </button>
+      </div>
+      <pre id="code-simple" class="install-code"><?= htmlspecialchars($codeSimple, ENT_QUOTES, 'UTF-8') ?></pre>
+    </div>
+  </div>
+
+  <!-- Вариант 2: асинхронный -->
+  <div class="col-12 col-lg-6">
+    <div class="install-wrap">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <div style="font-weight:600;font-size:13px;color:#1e3a8a;">Вариант 2 — асинхронный <span class="badge bg-success ms-1" style="font-size:10px;font-weight:600;text-transform:none;letter-spacing:0">рекомендуется</span></div>
+          <div style="font-size:11px;color:#94a3b8;">Не блокирует загрузку страницы</div>
+        </div>
+        <button class="btn btn-sm btn-outline-primary copy-btn" data-target="code-async">
+          <i class="bi bi-clipboard"></i> Копировать
+        </button>
+      </div>
+      <pre id="code-async" class="install-code"><?= htmlspecialchars($codeAsync, ENT_QUOTES, 'UTF-8') ?></pre>
+    </div>
+  </div>
+
+  <!-- Вариант 3: GTM -->
+  <div class="col-12">
+    <div class="install-wrap">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <div style="font-weight:600;font-size:13px;color:#1e3a8a;">Вариант 3 — через Google Tag Manager</div>
+          <div style="font-size:11px;color:#94a3b8;">Custom HTML тег → All Pages триггер</div>
+        </div>
+        <button class="btn btn-sm btn-outline-primary copy-btn" data-target="code-gtm">
+          <i class="bi bi-clipboard"></i> Копировать
+        </button>
+      </div>
+      <pre id="code-gtm" class="install-code"><?= htmlspecialchars($codeGtm, ENT_QUOTES, 'UTF-8') ?></pre>
+      <div class="mt-3 p-3" style="background:#f8faff;border-radius:8px;font-size:12px;color:#475569;">
+        <strong>Шаги в GTM:</strong>
+        <ol class="mb-0 mt-1" style="padding-left:18px;line-height:1.8;">
+          <li>Теги → Создать → Custom HTML</li>
+          <li>Вставить код выше<?= !$iCounter ? ', заменить <code>XXXXXXXX</code>' : '' ?></li>
+          <li>Триггер: All Pages</li>
+          <li>Сохранить и опубликовать</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- Адреса файлов -->
+  <div class="col-12">
+    <div class="install-wrap">
+      <div style="font-weight:600;font-size:13px;color:#1e3a8a;margin-bottom:14px;">Адреса файлов (текущий сервер)</div>
+      <div class="row g-2">
+        <div class="col-12 col-md-6">
+          <div style="font-size:11px;color:#94a3b8;margin-bottom:4px;">Скрипт виджета</div>
+          <div class="d-flex align-items-center gap-2">
+            <code class="flex-grow-1 p-2" style="background:#f1f5f9;border-radius:6px;font-size:12px;display:block;word-break:break-all;"><?= esc($iWidgetUrl) ?></code>
+            <button class="btn btn-sm btn-outline-secondary copy-btn flex-shrink-0" data-value="<?= esc($iWidgetUrl) ?>">
+              <i class="bi bi-clipboard"></i>
+            </button>
+          </div>
+        </div>
+        <div class="col-12 col-md-6">
+          <div style="font-size:11px;color:#94a3b8;margin-bottom:4px;">API-эндпоинт (gate)</div>
+          <div class="d-flex align-items-center gap-2">
+            <code class="flex-grow-1 p-2" style="background:#f1f5f9;border-radius:6px;font-size:12px;display:block;word-break:break-all;"><?= esc($iGateUrl) ?></code>
+            <button class="btn btn-sm btn-outline-secondary copy-btn flex-shrink-0" data-value="<?= esc($iGateUrl) ?>">
+              <i class="bi bi-clipboard"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <?php endif; ?>
+
+</div><!-- /row install -->
 
 <?php endif; ?>
 </div><!-- /container -->
@@ -909,6 +1074,22 @@ function testBitrix24() {
     el.textContent = d.success ? '✅ Лид создан!' : '❌ ' + (d.error || JSON.stringify(d.raw));
   });
 }
+// ── Копирование кода установки ──
+document.querySelectorAll('.copy-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var target = btn.dataset.target;
+    var text   = btn.dataset.value;
+    if (target) { var el = document.getElementById(target); if (el) text = el.textContent; }
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(function() {
+      var orig = btn.innerHTML;
+      btn.classList.add('copied');
+      btn.innerHTML = '<i class="bi bi-check2"></i> Скопировано';
+      setTimeout(function() { btn.classList.remove('copied'); btn.innerHTML = orig; }, 1800);
+    });
+  });
+});
+
 function saveIntegrations() {
   var fd = new FormData();
   fd.append('action',      'update_integrations');
