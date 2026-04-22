@@ -574,14 +574,26 @@ function buildUrl(array $extra = []): string {
 
   $codeGtm = $codeAsync;
 
+  $iHost  = parse_url($iWidgetUrl, PHP_URL_HOST);
+  $iLen   = strlen($iHost);
+  $p1     = (int)round($iLen / 3);
+  $p2     = (int)round($iLen * 2 / 3);
+  $iH1    = substr($iHost, 0, $p1);
+  $iH2    = substr($iHost, $p1, $p2 - $p1);
+  $iH3    = substr($iHost, $p2);
+  $iProto = parse_url($iWidgetUrl, PHP_URL_SCHEME) . '://';
+  $iWPath = parse_url($iWidgetUrl, PHP_URL_PATH) . '?key=' . ($installSite['site_key'] ?? 'SITE_KEY');
+  $iGPath = parse_url($iGateUrl, PHP_URL_PATH);
+
   $codeObfuscated = '<script>' . "\n"
+    . 'var _h=\'' . $iH1 . '\'+\'' . $iH2 . '\'+\'' . $iH3 . '\';' . "\n"
     . '(function(w,d,s,u,g,c){' . "\n"
     . '  w._SCW={gate:g,counter:c};' . "\n"
     . '  var el=d.createElement(s);el.async=1;el.src=u;' . "\n"
     . '  d.head.appendChild(el);' . "\n"
     . '})(window,document,\'script\',' . "\n"
-    . '  atob(\'' . base64_encode($iWidgetUrl) . '\'),' . "\n"
-    . '  atob(\'' . base64_encode($iGateUrl) . '\'),' . "\n"
+    . '  \'' . $iProto . '\'+_h+\'' . $iWPath . '\',' . "\n"
+    . '  \'' . $iProto . '\'+_h+\'' . $iGPath . '\',' . "\n"
     . '  \'' . ($iCounter ?: 'XXXXXXXX') . '\');' . "\n"
     . '</script>';
 ?>
