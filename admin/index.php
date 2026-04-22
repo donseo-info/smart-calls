@@ -1024,10 +1024,12 @@ function openEditModal(site) {
   var c = site.button_color || '#25c16f';
   document.getElementById('f_button_color').value = c;
   document.getElementById('f_button_color_hex').value = c;
-  sv('f_position','position');
-  sv('f_bottom_offset','bottom_offset');
-  sv('f_side_offset','side_offset');
-  if (!document.getElementById('f_position').value) document.getElementById('f_position').value = 'right';
+  var _pos = document.getElementById('f_position');
+  if (_pos) _pos.value = site.position || 'right';
+  var _bo = document.getElementById('f_bottom_offset');
+  if (_bo) _bo.value = site.bottom_offset || '30px';
+  var _so = document.getElementById('f_side_offset');
+  if (_so) _so.value = site.side_offset || '30px';
   var sc = Math.round((parseFloat(site.auto_open_scroll)||0.75)*100);
   document.getElementById('f_auto_open_scroll').value = sc;
   document.getElementById('f_auto_open_time').value = site.auto_open_time || 30;
@@ -1043,8 +1045,8 @@ function saveSite() {
   fd.set('auto_open_scroll', (parseFloat(fd.get('auto_open_scroll'))||75)/100);
   fetch('', {method:'POST', body:fd}).then(r=>r.json()).then(d => {
     if (d.success) { toast('Сохранено!'); setTimeout(()=>location.reload(), 800); }
-    else toast('Ошибка', false);
-  });
+    else toast('Ошибка: ' + (d.error || 'неизвестно'), false);
+  }).catch(function(e) { toast('Ошибка запроса', false); console.error('saveSite', e); });
 }
 
 // ── Toggle ──
