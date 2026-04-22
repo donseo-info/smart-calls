@@ -600,6 +600,7 @@ function buildUrl(array $extra = []): string {
   $iKey   = '?key=' . ($installSite['site_key'] ?? 'SITE_KEY');
 
   $codeObfuscated = '<script>' . "\n"
+    . '(function(){' . "\n"
     . 'var _h=\'' . $iH1 . '\'+\'' . $iH2 . '\'+\'' . $iH3 . '\';' . "\n"
     . 'var _p=\'' . $iP1 . '\'+\'' . $iP2 . '\'+\'' . $iP3 . '\';' . "\n"
     . 'var _e=\'.p\'+\'hp\';' . "\n"
@@ -611,6 +612,7 @@ function buildUrl(array $extra = []): string {
     . '  \'' . $iProto . '\'+_h+_p+\'' . $iWName . '\'+_e+\'' . $iKey . '\',' . "\n"
     . '  \'' . $iProto . '\'+_h+_p+\'' . $iGName . '\'+_e,' . "\n"
     . '  \'' . ($iCounter ?: 'XXXXXXXX') . '\');' . "\n"
+    . '})();' . "\n"
     . '</script>';
 ?>
 
