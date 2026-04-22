@@ -6,6 +6,13 @@ session_start();
 if (empty($_SESSION['scw_admin'])) { header('Location: login.php'); exit; }
 
 R::setup('sqlite:' . DB_PATH);
+// Auto-migrations: add new columns if they don't exist yet
+$_pdo = new PDO('sqlite:' . DB_PATH);
+foreach ([
+    "ALTER TABLE sites ADD COLUMN bottom_offset TEXT NOT NULL DEFAULT '30px'",
+    "ALTER TABLE sites ADD COLUMN side_offset   TEXT NOT NULL DEFAULT '30px'",
+] as $_sql) { try { $_pdo->exec($_sql); } catch (PDOException $_e) {} }
+unset($_pdo, $_sql, $_e);
 R::freeze(true);
 
 // ── AJAX-обработчики ──────────────────────────────────────────────────────────
