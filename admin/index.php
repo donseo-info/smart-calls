@@ -573,6 +573,19 @@ function buildUrl(array $extra = []): string {
     . '</script>';
 
   $codeGtm = $codeAsync;
+
+  $iWidgetPath  = parse_url($iWidgetUrl, PHP_URL_PATH) . '?key=' . ($installSite['site_key'] ?? 'SITE_KEY');
+  $iGatePath    = parse_url($iGateUrl, PHP_URL_PATH);
+  $codeTemplate = '<script>' . "\n"
+    . '(function(w,d,s,u,g,c){' . "\n"
+    . '  w._SCW={gate:g,counter:c};' . "\n"
+    . '  var el=d.createElement(s);el.async=1;el.src=u;' . "\n"
+    . '  d.head.appendChild(el);' . "\n"
+    . '})(window,document,\'script\',' . "\n"
+    . '  \'https://{ваш-домен}' . $iWidgetPath . '\',' . "\n"
+    . '  \'https://{ваш-домен}' . $iGatePath . '\',' . "\n"
+    . '  \'' . ($iCounter ?: 'XXXXXXXX') . '\');' . "\n"
+    . '</script>';
 ?>
 
 <div class="row g-3">
@@ -641,6 +654,22 @@ function buildUrl(array $extra = []): string {
         </button>
       </div>
       <pre id="code-async" class="install-code"><?= htmlspecialchars($codeAsync, ENT_QUOTES, 'UTF-8') ?></pre>
+    </div>
+  </div>
+
+  <!-- Вариант 2б: шаблон с скрытым доменом -->
+  <div class="col-12">
+    <div class="install-wrap" style="border-left:4px solid #f59e0b;">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <div style="font-weight:600;font-size:13px;color:#1e3a8a;">Вариант 2 — шаблон <span class="badge ms-1" style="background:#fffbeb;color:#b45309;font-size:10px;font-weight:600;text-transform:none;">домен скрыт</span></div>
+          <div style="font-size:11px;color:#94a3b8;">Для публикации / документации — замените <code>{ваш-домен}</code> на адрес сервера</div>
+        </div>
+        <button class="btn btn-sm btn-outline-warning copy-btn" data-target="code-template">
+          <i class="bi bi-clipboard"></i> Копировать
+        </button>
+      </div>
+      <pre id="code-template" class="install-code"><?= htmlspecialchars($codeTemplate, ENT_QUOTES, 'UTF-8') ?></pre>
     </div>
   </div>
 
