@@ -88,6 +88,8 @@ $migrations = [
     "ALTER TABLE sites ADD COLUMN tg_chat_id       TEXT NOT NULL DEFAULT ''",
     "ALTER TABLE sites ADD COLUMN b24_webhook      TEXT NOT NULL DEFAULT ''",
     "ALTER TABLE sites ADD COLUMN b24_custom_fields TEXT NOT NULL DEFAULT '{}'",
+    "ALTER TABLE sites ADD COLUMN bottom_offset    TEXT NOT NULL DEFAULT '30px'",
+    "ALTER TABLE sites ADD COLUMN side_offset      TEXT NOT NULL DEFAULT '30px'",
 ];
 foreach ($migrations as $sql) {
     try { $pdo->exec($sql); } catch (PDOException $e) { /* колонка уже есть */ }
