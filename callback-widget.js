@@ -535,6 +535,15 @@
             submitBtn.disabled = true;
             submitBtn.textContent = 'Отправляем...';
 
+            // ── Цель в Яндекс.Метрику — сразу при отправке ──
+            try {
+                if (WIDGET_CONFIG.ymCounterId && typeof ym === 'function' && !document.cookie.match(/scw_ym_goal=1/)) {
+                    ym(WIDGET_CONFIG.ymCounterId, 'reachGoal', WIDGET_CONFIG.ymGoal);
+                    var _d = new Date(); _d.setMonth(_d.getMonth() + 1);
+                    document.cookie = 'scw_ym_goal=1;expires=' + _d.toUTCString() + ';path=/';
+                }
+            } catch (e) {}
+
             // пользовательский обработчик или отправка на сервер
             var handler;
             if (typeof WIDGET_CONFIG.onSubmit === 'function') {
@@ -585,15 +594,6 @@
             }
 
             Promise.resolve(handler).then(function () {
-                // ── Цель в Яндекс.Метрику (сразу, в браузере) ──
-                try {
-                    if (WIDGET_CONFIG.ymCounterId && typeof ym === 'function' && !document.cookie.match(/scw_ym_goal=1/)) {
-                        ym(WIDGET_CONFIG.ymCounterId, 'reachGoal', WIDGET_CONFIG.ymGoal);
-                        var _d = new Date(); _d.setMonth(_d.getMonth() + 1);
-                        document.cookie = 'scw_ym_goal=1;expires=' + _d.toUTCString() + ';path=/';
-                    }
-                } catch (e) {}
-
                 // показываем успех
                 formContent.forEach(function (el) { el.style.display = 'none'; });
                 successDiv.style.display = 'flex';
