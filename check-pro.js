@@ -70,27 +70,16 @@ function checkTrafficSource() {
     // Если параметра source нет - считаем трафик валидным
     if (!sourceParam) {
         trafficState.isValidSource = true;
-        console.log('Источник трафика: параметр source отсутствует - трафик валидный');
         return true;
     }
-    
-    // Приводим source к нижнему регистру для проверки
+
     const sourceLower = sourceParam.toLowerCase();
-    
-    // Проверяем вхождение частей имен из блеклиста
-    const isBlacklisted = TRAFFIC_CONFIG.blacklistedSources.some(blocked => 
+    const isBlacklisted = TRAFFIC_CONFIG.blacklistedSources.some(blocked =>
         sourceLower.includes(blocked.toLowerCase())
     );
-    
-    if (isBlacklisted) {
-        trafficState.isValidSource = false;
-        console.log(`Источник трафика заблокирован: ${sourceParam} (содержит запрещенную часть)`);
-        return false;
-    } else {
-        trafficState.isValidSource = true;
-        console.log(`Источник трафика разрешен: ${sourceParam}`);
-        return true;
-    }
+
+    trafficState.isValidSource = !isBlacklisted;
+    return !isBlacklisted;
 }
 
 /**
@@ -102,7 +91,6 @@ function initTimeTracking() {
         
         if (elapsedTime >= TRAFFIC_CONFIG.timeThreshold) {
             trafficState.timeSpent = true;
-            console.log('Временной критерий выполнен: 31+ секунд на сайте');
             clearInterval(timeInterval);
         }
     }, TRAFFIC_CONFIG.checkInterval);
@@ -136,12 +124,6 @@ function initScrollTracking() {
         
         if (isVisible && !blockVisible) {
             trafficState.scrolled = true;
-            console.log('Прокрутка: секция программы стала видимой');
-            console.log('Позиция элемента:', {
-                top: rect.top,
-                bottom: rect.bottom,
-                windowHeight: windowHeight
-            });
             blockVisible = true;
         }
     }
@@ -161,42 +143,19 @@ function initScrollTracking() {
 function initClickTracking() {
     // Программа курса (новый селектор)
     document.addEventListener('click', function(e) {
-        if (e.target.closest('.program-download')) {
-            trafficState.programClick = true;
-            console.log('Клик: скачивание программы');
-        }
+        if (e.target.closest('.program-download')) trafficState.programClick = true;
     });
-    
-    // Цены (новый селектор)
     document.addEventListener('click', function(e) {
-        if (e.target.closest('.pricing-toggle')) {
-            trafficState.priceClick = true;
-            console.log('Клик: переключатель цен');
-        }
+        if (e.target.closest('.pricing-toggle'))   trafficState.priceClick = true;
     });
-    
-    // Видео
     document.addEventListener('click', function(e) {
-        if (e.target.closest('.play-button')) {
-            trafficState.videoClick = true;
-            console.log('Клик: видео');
-        }
+        if (e.target.closest('.play-button'))      trafficState.videoClick = true;
     });
-    
-    // Табы (кнопки .tab-btn)
     document.addEventListener('click', function(e) {
-        if (e.target.closest('.tab-btn')) {
-            trafficState.tabClick = true;
-            console.log('Клик: кнопка таба');
-        }
+        if (e.target.closest('.tab-btn'))          trafficState.tabClick = true;
     });
-    
-    // FAQ (новый функционал)
     document.addEventListener('click', function(e) {
-        if (e.target.closest('.faq-question')) {
-            trafficState.faqClick = true;
-            console.log('Клик: вопрос FAQ');
-        }
+        if (e.target.closest('.faq-question'))     trafficState.faqClick = true;
     });
 }
 
@@ -205,8 +164,7 @@ function initClickTracking() {
  */
 function initFormTracking() {
     document.addEventListener('submit', function(e) {
-      /*  trafficState.formSubmitted = true;
-        console.log('Форма отправлена');*/
+        trafficState.formSubmitted = true;
     });
 }
 
@@ -281,59 +239,38 @@ function sendGoalSafely(goalIds = null) {
 
     // Exclusive mode: если уже отправлена любая цель — блокируем все остальные
     if (TRAFFIC_CONFIG.exclusiveGoalMode && isAnyGoalSent()) {
-        console.log('Exclusive mode: цель уже была отправлена ранее — пропускаем');
         return { sent: [], skipped: goalsToSend.map(g => g.id), success: false };
     }
     
     goalsToSend.forEach(goal => {
         // Проверяем куки перед отправкой каждой цели
         if (getCookie(goal.cookieName) === 'sent') {
-            console.log(`Цель ${goal.id} уже была отправлена ранее - пропускаем`);
             skippedGoals.push(goal.id);
             return;
         }
-        
+
         try {
-            // Устанавливаем куки ПЕРЕД отправкой (на случай ошибок)
             setCookie(goal.cookieName, 'sent', TRAFFIC_CONFIG.cookieExpiry);
-            
-            // Яндекс.Метрика
+
             if (typeof ym !== 'undefined') {
                 ym(TRAFFIC_CONFIG.yandexMetrikaId, 'reachGoal', goal.name);
-                console.log(`Цель ${goal.id} (${goal.name}) отправлена в Яндекс.Метрику`);
-            } else {
-                console.warn('Яндекс.Метрика не найдена');
             }
-            
-            // Top.Mail
+
             if (typeof _tmr !== 'undefined') {
-                _tmr.push({
-                    type: 'reachGoal', 
-                    id: TRAFFIC_CONFIG.topMailId, 
-                    goal: goal.name
-                });
-                console.log(`Цель ${goal.id} (${goal.name}) отправлена в Top.Mail`);
-            } else {
-                console.warn('Top.Mail не найден');
+                _tmr.push({ type: 'reachGoal', id: TRAFFIC_CONFIG.topMailId, goal: goal.name });
             }
-            
+
             sentGoals.push(goal.id);
 
-            // Exclusive mode: фиксируем что цель отправлена — блокируем другие
             if (TRAFFIC_CONFIG.exclusiveGoalMode) {
                 markAnyGoalSent();
             }
-            
+
         } catch (error) {
-            console.error(`Ошибка отправки цели ${goal.id}:`, error);
-            // При ошибке удаляем куки, чтобы можно было попробовать снова
+            console.error(`[TrafficAnalyzer] goal send error ${goal.id}:`, error);
             setCookie(goal.cookieName, '', -1);
         }
     });
-    
-    if (sentGoals.length > 0) {
-        console.log(`Успешно отправлены цели: ${sentGoals.join(', ')}`);
-    }
     
     return {
         sent: sentGoals,
@@ -347,16 +284,10 @@ function sendGoalSafely(goalIds = null) {
  */
 function startTrafficChecker() {
     const checkerInterval = setInterval(() => {
-        // Проверяем только валидные источники или отправленные формы
-        if (!trafficState.isValidSource && !trafficState.formSubmitted) {
-            return;
-        }
-        
+        if (!trafficState.isValidSource && !trafficState.formSubmitted) return;
+
         if (isQualityTraffic()) {
-            console.log('Обнаружен качественный трафик!');
             clearInterval(checkerInterval);
-            
-            // Отправляем основную цель с проверкой дублей
             sendGoalSafely(['etarget_rpo']);
         }
     }, TRAFFIC_CONFIG.checkInterval);
@@ -369,7 +300,6 @@ window.TrafficAnalyzer = {
     // Установить отправку формы
     setFormSubmitted: function() {
         window.trafficState.formSubmitted = true;
-        console.log('Форма помечена как отправленная (внешний вызов)');
     },
     
     // Получить текущее состояние
@@ -379,44 +309,21 @@ window.TrafficAnalyzer = {
     
     // Отправить конкретные цели
     sendGoals: function(goalIds) {
-        if (!goalIds || !Array.isArray(goalIds)) {
-            console.error('Необходимо указать массив ID целей');
-            return false;
-        }
-        
-        if (isQualityTraffic()) {
-            return sendGoalSafely(goalIds);
-        } else {
-            console.log('Трафик не соответствует критериям качества');
-            return { sent: [], skipped: [], success: false };
-        }
+        if (!goalIds || !Array.isArray(goalIds)) return false;
+        if (isQualityTraffic()) return sendGoalSafely(goalIds);
+        return { sent: [], skipped: [], success: false };
     },
-    
-    // Принудительно отправить конкретные цели (без проверки качества)
+
     forceSendGoals: function(goalIds) {
-        if (!goalIds || !Array.isArray(goalIds)) {
-            console.error('Необходимо указать массив ID целей');
-            return false;
-        }
-        
+        if (!goalIds || !Array.isArray(goalIds)) return false;
         return sendGoalSafely(goalIds);
     },
-    
-    // Принудительно отправить основную цель (если трафик качественный)
+
     forceSendGoal: function() {
-        // Сначала проверяем куки основной цели
         const mainGoal = TRAFFIC_CONFIG.goals[0];
-        if (getCookie(mainGoal.cookieName) === 'sent') {
-            console.log('Основная цель уже была отправлена ранее - принудительная отправка отклонена');
-            return false;
-        }
-        
-        if (isQualityTraffic()) {
-            return sendGoalSafely();
-        } else {
-            console.log('Трафик не соответствует критериям качества');
-            return false;
-        }
+        if (getCookie(mainGoal.cookieName) === 'sent') return false;
+        if (isQualityTraffic()) return sendGoalSafely();
+        return false;
     },
     
     // Проверить качество трафика
@@ -451,7 +358,6 @@ window.TrafficAnalyzer = {
             const goal = TRAFFIC_CONFIG.goals.find(g => g.id === goalId);
             if (goal) {
                 setCookie(goal.cookieName, '', -1);
-                console.log(`Куки цели ${goalId} сброшены`);
             }
         } else {
             // Сбрасываем все цели + общий exclusive-флаг
@@ -460,7 +366,6 @@ window.TrafficAnalyzer = {
             });
             setCookie(TRAFFIC_CONFIG.sharedGoalCookieName, '', -1);
             trafficState.anyGoalSent = false;
-            console.log('Куки всех целей сброшены (включая exclusive-флаг)');
         }
     },
 
@@ -472,25 +377,15 @@ window.TrafficAnalyzer = {
     // Отметить что внешняя цель отправлена — заблокирует eTarget в exclusive mode
     markAnyGoalSent: function() {
         markAnyGoalSent();
-        console.log('Exclusive: внешняя цель отмечена как отправленная — eTarget заблокирован');
     }
 };
 function initTrafficAnalyzer() {
-    console.log('Инициализация анализатора трафика...');
-    
-    // Проверяем источник трафика
     checkTrafficSource();
-    
-    // Запускаем отслеживание
     initTimeTracking();
     initScrollTracking();
     initClickTracking();
     initFormTracking();
-    
-    // Запускаем основной чекер
     startTrafficChecker();
-    
-    console.log('Анализатор трафика запущен');
 }
 
 // Автозапуск при загрузке DOM

@@ -24,8 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 // ─── Парсинг тела запроса ──────────────────────────────────────────────────────
 $body = json_decode(file_get_contents('php://input'), true);
-if (!$body) {
-    $body = $_POST; // fallback на form-data
+if (!is_array($body)) {
+    $body = is_array($_POST) && $_POST ? $_POST : [];
 }
 
 // ─── Honeypot: боты заполняют скрытое поле ────────────────────────────────────
@@ -74,16 +74,20 @@ if (!$site) {
     exit;
 }
 
-// ─── CSRF: проверяем HMAC по текущему и предыдущему 5-минутному окну ──────────
+// ─── CSRF: проверяем HMAC по текущему и предыдущим 5-минутным окнам ──────────
+define('CSRF_WINDOW_TOLERANCE', 2); // допуск: текущее окно + 2 назад = ±10 мин
 $csrfToken = trim($body['_csrf'] ?? '');
 $window    = (int)floor(time() / 300);
 $valid = false;
-foreach ([$window, $window - 1, $window - 2] as $w) {
+$windows = [];
+for ($i = 0; $i <= CSRF_WINDOW_TOLERANCE; $i++) { $windows[] = $window - $i; }
+foreach ($windows as $w) {
     if (hash_equals(hash_hmac('sha256', $w . ':' . $siteKey, CSRF_SECRET), $csrfToken)) {
         $valid = true; break;
     }
 }
 if (!$valid) {
+    log_lead('[CSRF FAIL] site=' . $siteKey . ' ip=' . ($_SERVER['REMOTE_ADDR'] ?? '') . ' token=' . $csrfToken);
     http_response_code(403);
     echo json_encode(['success' => false, 'error' => 'invalid token']);
     R::close(); exit;
@@ -161,8 +165,10 @@ function send_telegram(string $token, string $chatId, string $phone, string $tri
             'parse_mode' => 'HTML',
         ],
     ]);
-    curl_exec($ch);
+    $result = curl_exec($ch);
+    $err    = curl_error($ch);
     curl_close($ch);
+    if ($err) { log_lead('[TG ERROR] ' . $err); }
 }
 
 function send_bitrix24(string $webhook, string $phone, string $trigger, string $url, string $utmSource, string $utmMedium, string $utmCampaign, string $title, string $ip, array $customFields = [], string $ymClientId = '', string $referrer = '', string $utmContent = '', string $utmTerm = ''): void
@@ -206,9 +212,10 @@ function send_bitrix24(string $webhook, string $phone, string $trigger, string $
         CURLOPT_POST           => true,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_TIMEOUT        => 15,
-        CURLOPT_SSL_VERIFYPEER => false,
         CURLOPT_POSTFIELDS     => http_build_query(['fields' => $fields]),
     ]);
-    curl_exec($ch);
+    $result = curl_exec($ch);
+    $err    = curl_error($ch);
     curl_close($ch);
+    if ($err) { log_lead('[B24 ERROR] ' . $err); }
 }

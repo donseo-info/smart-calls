@@ -46,23 +46,28 @@ class MetrikaSender
         $tmpPath = tempnam(sys_get_temp_dir(), 'scw_') . '.csv';
         file_put_contents($tmpPath, $csv);
 
-        $url = str_replace('{counterId}', $counterId, $this->apiUrl);
+        $url      = str_replace('{counterId}', $counterId, $this->apiUrl);
+        $response = '';
+        $httpCode = 0;
+        $error    = '';
 
-        $ch = curl_init();
-        curl_setopt_array($ch, [
-            CURLOPT_URL            => $url,
-            CURLOPT_POST           => true,
-            CURLOPT_POSTFIELDS     => ['file' => new CURLFile($tmpPath, 'text/csv', 'conversions.csv')],
-            CURLOPT_HTTPHEADER     => ['Authorization: OAuth ' . $this->accessToken],
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT        => 10,
-        ]);
-
-        $response = curl_exec($ch);
-        $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $error    = curl_error($ch);
-        curl_close($ch);
-        @unlink($tmpPath);
+        try {
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL            => $url,
+                CURLOPT_POST           => true,
+                CURLOPT_POSTFIELDS     => ['file' => new CURLFile($tmpPath, 'text/csv', 'conversions.csv')],
+                CURLOPT_HTTPHEADER     => ['Authorization: OAuth ' . $this->accessToken],
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT        => 10,
+            ]);
+            $response = curl_exec($ch);
+            $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $error    = curl_error($ch);
+            curl_close($ch);
+        } finally {
+            if (file_exists($tmpPath)) unlink($tmpPath);
+        }
 
         return [
             'success'   => $httpCode === 200,
