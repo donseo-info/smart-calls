@@ -45,6 +45,14 @@
         } catch (e) {}
     })();
 
+    // ─── YM Counter ID: из админки или автодетект со страницы ───────────────────
+    if (!WIDGET_CONFIG.ymCounterId) {
+        try {
+            var _counters = window.Ya && window.Ya.Metrika2 && window.Ya.Metrika2.counters();
+            if (_counters && _counters.length) { WIDGET_CONFIG.ymCounterId = _counters[0].id; }
+        } catch (e) {}
+    }
+
     // ─── YM Client ID: localStorage → cookie → ym() API ─────────────────────────
     var _ymClientId  = '';
     var _ymReady     = false;
