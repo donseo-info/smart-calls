@@ -28,9 +28,10 @@
         onSubmit: null,                        // кастомный callback(phone) вместо отправки на сервер
     }, window.__SCW_CONFIG || {}, (function () {
         var s = window._SCW || {};
+        var cfg = window.__SCW_CONFIG || {};
         var o = {};
-        if (s.gate)    o.submitUrl    = s.gate;
-        if (s.counter) o.ymCounterId  = parseInt(s.counter, 10) || 0;
+        if (s.gate)                           o.submitUrl   = s.gate;
+        if (s.counter && !cfg.ymCounterId)    o.ymCounterId = parseInt(s.counter, 10) || 0;
         return o;
     })());
 
