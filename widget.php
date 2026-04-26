@@ -65,15 +65,6 @@ $config = [
     'ymGoal'            => $site->ym_goal ?: 'callback_widget',
 ];
 
-// ETag по updated_at — принудительная ревалидация при изменении настроек
-$etag = '"' . md5($site->site_key . $site->updated_at) . '"';
-header('ETag: ' . $etag);
-if (isset($_SERVER['HTTP_IF_NONE_MATCH']) && $_SERVER['HTTP_IF_NONE_MATCH'] === $etag) {
-    http_response_code(304);
-    R::close();
-    exit;
-}
-
 R::close();
 
 // CSRF: HMAC по 5-минутному окну + siteKey
