@@ -595,17 +595,13 @@
 
             Promise.resolve(handler).then(function () {
                 // ── Цель в Яндекс.Метрику (сразу, в браузере) ──
-                console.log('[SCW] ymCounterId:', WIDGET_CONFIG.ymCounterId, 'ym:', typeof ym, 'cookie:', document.cookie.match(/scw_ym_goal=1/));
                 try {
                     if (WIDGET_CONFIG.ymCounterId && typeof ym === 'function' && !document.cookie.match(/scw_ym_goal=1/)) {
-                        console.log('[SCW] firing reachGoal:', WIDGET_CONFIG.ymGoal);
                         ym(WIDGET_CONFIG.ymCounterId, 'reachGoal', WIDGET_CONFIG.ymGoal);
                         var _d = new Date(); _d.setMonth(_d.getMonth() + 1);
                         document.cookie = 'scw_ym_goal=1;expires=' + _d.toUTCString() + ';path=/';
-                    } else {
-                        console.log('[SCW] reachGoal BLOCKED. counterId:', !!WIDGET_CONFIG.ymCounterId, 'ym:', typeof ym === 'function', 'noCookie:', !document.cookie.match(/scw_ym_goal=1/));
                     }
-                } catch (e) { console.error('[SCW] ym error:', e); }
+                } catch (e) {}
 
                 // показываем успех
                 formContent.forEach(function (el) { el.style.display = 'none'; });
