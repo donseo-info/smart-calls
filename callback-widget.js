@@ -400,7 +400,7 @@
     // ─── Валидация ────────────────────────────────────────────────────────────────
     function isValidPhone(val) {
         var len = val.replace(/\D/g, '').length;
-        return len >= 10 && len <= 12;
+        return len === 11;
     }
 
     // ─── Построение DOM ──────────────────────────────────────────────────────────
@@ -488,6 +488,11 @@
 
         var autoOpened = false; // флаг: попап открыт автоматически
         maskPhone(phoneInput);
+
+        submitBtn.disabled = true;
+        phoneInput.addEventListener('input', function () {
+            submitBtn.disabled = !isValidPhone(phoneInput.value);
+        });
 
         // ── Скрыть плашку ──
         function hideBadge() {
@@ -616,7 +621,7 @@
                         formContent.forEach(function (el) { el.style.display = ''; });
                         successDiv.style.display = 'none';
                         phoneInput.value = '';
-                        submitBtn.disabled = false;
+                        submitBtn.disabled = true;
                         submitBtn.textContent = WIDGET_CONFIG.submitBtnText;
                     }, 400);
                 }, 4000);
